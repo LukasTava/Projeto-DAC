@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      lang="en">
+<f:view contentType="text/html;charset=UTF-8" encoding="UTF-8">
+    <h:head>
+        <title>Orientador</title>
+        <h:outputStylesheet library="css" name="bootstrap.min.css"/>
+    </h:head>
+    <h:body>
+        <h:form>
+            <p:menubar styleClass="custom-menubar">
+                <p:menuitem value="Aluno" action="/aluno?faces-redirect=true"/>
+                <p:menuitem value="Empresa" action="/empresa?faces-redirect=true"/>
+                <p:menuitem value="Orientador" action="/orientador?faces-redirect=true"/>
+                <p:menuitem value="Estágio" action="/estagio?faces-redirect=true"/>
+                <p:separator/>
+                <p:menuitem value="Avaliação Orientador" action="/avaliacao_orientador?faces-redirect=true"/>
+                <p:menuitem value="Avaliação Empresa" action="/avaliacao_empresa?faces-redirect=true"/>
+            </p:menubar>
+        </h:form>
+        <!-- Formulário para adicionar orientador -->
+        <h:form id="formOrientador">
+            <p:growl id="messages" showDetail="true"/>
+            <p:toolbar>
+                <p:toolbarGroup>
+                    <p:commandButton value="Adicionar" icon="pi pi-plus" actionListener="#{orientadorBean.novo}"
+                                     update=":dialogs:manage-orientador-content" oncomplete="PF('manageOrientadorDialog').show()"
+                                     styleClass="ui-button-success" style="margin-right: .5rem">
+                        <p:resetInput target=":dialogs:manage-orientador-content"/>
+                    </p:commandButton>
+                    <p:commandButton id="delete-orientadores-button" value="Excluir"
+                                     icon="pi pi-trash" actionListener="#{orientadorBean.excluirOrientadoresSelecionados}"
+                                     styleClass="ui-button-danger" disabled="#{!orientadorBean.hasOrientadoresSelecionados()}"
+                                     update="@this">
+                        <p:confirm header="Confirmation" message="Excluir os orientadores selecionados?"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+                </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="orientadoresTable" value="#{orientadorBean.orientadores}" var="orientador"
+                         reflow="true" selection="#{orientadorBean.orientadoresSelecionados}"
+                         rowKey="#{orientador.id}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+
+                <p:ajax event="rowSelect" update=":formOrientador:delete-orientadores-button"/>
+                <p:ajax event="rowUnselect" update=":formOrientador:delete-orientadores-button"/>
+                <p:ajax event="rowSelectCheckbox" update=":formOrientador:delete-orientadores-button"/>
+                <p:ajax event="rowUnselectCheckbox" update=":formOrientador:delete-orientadores-button"/>
+                <p:ajax event="toggleSelect" update=":formOrientador:delete-orientadores-button"/>
+
+                <p:column selectionMode="multiple"/>
+                <p:column headerText="ID">
+                    <h:outputText value="#{orientador.id}"/>
+                </p:column>
+                <p:column headerText="Nome">
+                    <h:outputText value="#{orientador.nome}"/>
+                </p:column>
+                <p:column headerText="Disciplina">
+                    <h:outputText value="#{orientador.disciplina}"/>
+                </p:column>
+                <p:column exportable="false">
+                    <p:commandButton icon="pi pi-pencil" update=":dialogs:manage-orientador-content"
+                                     oncomplete="PF('manageOrientadorDialog').show()"
+                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                        <f:setPropertyActionListener value="#{orientador}" target="#{orientadorBean.orientadorSelecionado}"/>
+                        <p:resetInput target=":dialogs:manage-orientador-content"/>
+                    </p:commandButton>
+                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                     process="@this"
+                                     oncomplete="PF('deleteOrientadorDialog').show()">
+                        <f:setPropertyActionListener value="#{orientador}" target="#{orientadorBean.orientadorSelecionado}"/>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+
+        <h:form id="dialogs">
+            <p:dialog header="Adicionar orientador" showEffect="fade" modal="true" widgetVar="manageOrientadorDialog"
+                      responsive="true">
+                <p:outputPanel id="manage-orientador-content" class="ui-fluid">
+                    <p:outputPanel rendered="#{not empty orientadorBean.orientadorSelecionado}">
+                        <p:panelGrid columns="2" style="margin-bottom:1rem">
+                            <p:outputLabel for="nome" value="Nome:"/>
+                            <p:inputText id="nome" value="#{orientadorBean.orientadorSelecionado.nome}" required="true"/>
+                            <p:outputLabel for="disciplina" value="Disciplina"/>
+                            <p:inputText id="disciplina" value="#{orientadorBean.orientadorSelecionado.disciplina}"
+                                         required="true"/>
+                        </p:panelGrid>
+                    </p:outputPanel>
+                </p:outputPanel>
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="pi pi-check" actionListener="#{orientadorBean.salvar}"
+                                     update="manage-orientador-content" process="manage-orientador-content @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times" onclick="PF('manageOrientadorDialog').hide()"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+
+            <p:confirmDialog widgetVar="deleteOrientadorDialog" showEffect="fade" width="300"
+                             message="Excluir o orientador selecionado?" header="Confirmar" severity="warn">
+                <p:commandButton value="Sim" icon="pi pi-check" actionListener="#{orientadorBean.excluir}"
+                                 process="@this" update=":formOrientador:delete-orientadores-button"
+                                 oncomplete="PF('deleteOrientadorDialog').hide()" />
+                <p:commandButton value="Não" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                                 onclick="PF('deleteOrientadorDialog').hide()" />
+            </p:confirmDialog>
+
+            <p:confirmDialog global="true" showEffect="fade" width="300">
+                <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                                 icon="pi pi-times" />
+            </p:confirmDialog>
+
+        </h:form>
+
+    </h:body>
+</f:view>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      lang="en">
+<f:view contentType="text/html;charset=UTF-8" encoding="UTF-8">
+    <h:head>
+        <title>Estágio</title>
+        <h:outputStylesheet library="css" name="bootstrap.min.css"/>
+    </h:head>
+    <h:body>
+        <h:form>
+            <p:menubar styleClass="custom-menubar">
+                <p:menuitem value="Aluno" action="/aluno?faces-redirect=true"/>
+                <p:menuitem value="Empresa" action="/empresa?faces-redirect=true"/>
+                <p:menuitem value="Orientador" action="/orientador?faces-redirect=true"/>
+                <p:menuitem value="Estágio" action="/estagio?faces-redirect=true"/>
+                <p:separator/>
+                <p:menuitem value="Avaliação Orientador" action="/avaliacao_orientador?faces-redirect=true"/>
+                <p:menuitem value="Avaliação Empresa" action="/avaliacao_empresa?faces-redirect=true"/>
+            </p:menubar>
+        </h:form>
+        <!-- Formulário para adicionar Estágio -->
+        <h:form id="formEstagio">
+            <p:growl id="messages" showDetail="true"/>
+            <p:toolbar>
+                <p:toolbarGroup>
+                    <p:commandButton value="Adicionar" icon="pi pi-plus" actionListener="#{estagioBean.novo()}"
+                                     update=":dialogs:manage-estagio-content" oncomplete="PF('manageEstagioDialog').show()"
+                                     styleClass="ui-button-success" style="margin-right: .5rem">
+                        <p:resetInput target=":dialogs:manage-estagio-content"/>
+                    </p:commandButton>
+                    <p:commandButton id="delete-estagios-button" value="Excluir"
+                                     icon="pi pi-trash" actionListener="#{estagioBean.excluirSelecionados}"
+                                     styleClass="ui-button-danger" disabled="#{!estagioBean.hasEstagiosSelecionados()}"
+                                     update="@this">
+                        <p:confirm header="Confirmation" message="Excluir os estágios selecionados?"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+                </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="estagiosTable" value="#{estagioBean.estagios}" var="estagio"
+                         reflow="true" selection="#{estagioBean.estagiosSelecionados}"
+                         rowKey="#{estagio.id}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+
+                <p:ajax event="rowSelect" update=":formEstagio:delete-estagios-button"/>
+                <p:ajax event="rowUnselect" update=":formEstagio:delete-estagios-button"/>
+                <p:ajax event="rowSelectCheckbox" update=":formEstagio:delete-estagios-button"/>
+                <p:ajax event="rowUnselectCheckbox" update=":formEstagio:delete-estagios-button"/>
+                <p:ajax event="toggleSelect" update=":formEstagio:delete-estagios-button"/>
+
+                <p:column selectionMode="multiple"/>
+                <p:column headerText="ID">
+                    <h:outputText value="#{estagio.id}"/>
+                </p:column>
+                <p:column headerText="Matrícula">
+                    <h:outputText value="#{estagio.aluno.matricula}"/>
+                </p:column>
+                <p:column headerText="Aluno">
+                    <h:outputText value="#{estagio.aluno.nome}"/>
+                </p:column>
+                <p:column headerText="Orientador">
+                    <h:outputText value="#{estagio.orientador.nome}"/>
+                </p:column>
+                <p:column headerText="Empresa">
+                    <h:outputText value="#{estagio.empresa.nome}"/>
+                </p:column>
+                <p:column headerText="Início">
+                    <h:outputText value="#{estagio.inicio}"/>
+                </p:column>
+                <p:column headerText="Fim">
+                    <h:outputText value="#{estagio.fim}"/>
+                </p:column>
+                <p:column headerText="Carga Horária">
+                    <h:outputText value="#{estagio.cargaHoraria}"/>
+                </p:column>
+                <p:column headerText="Total de Horas">
+                    <h:outputText value="#{estagio.totalHoras}"/>
+                </p:column>
+                <p:column headerText="Status">
+                    <h:outputText value="#{estagio.status}"/>
+                </p:column>
+
+                <p:column exportable="false">
+                    <p:commandButton icon="pi pi-pencil" update=":dialogs:manage-estagio-content"
+                                     oncomplete="PF('manageEstagioDialog').show()"
+                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                        <f:setPropertyActionListener value="#{estagio}" target="#{estagioBean.estagioSelecionado}"/>
+                        <p:resetInput target=":dialogs:manage-estagio-content"/>
+                    </p:commandButton>
+                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                     process="@this"
+                                     oncomplete="PF('deleteEstagioDialog').show()">
+                        <f:setPropertyActionListener value="#{estagio}" target="#{estagioBean.estagioSelecionado}"/>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+
+        <h:form id="dialogs">
+            <p:dialog header="Adicionar estágio" showEffect="fade" modal="true" widgetVar="manageEstagioDialog"
+                      responsive="true">
+                <p:outputPanel id="manage-estagio-content" class="ui-fluid">
+                    <p:outputPanel rendered="#{not empty estagioBean.estagioSelecionado}">
+                        <p:messages id="dialog-messages" showDetail="true" closable="true" />
+                        <p:panelGrid columns="2" style="margin-bottom:1rem">
+                            <p:outputLabel for="orientador-group" value="Orientador:"/>
+                            <p:selectOneMenu id="orientador-group" value="#{estagioBean.estagioSelecionado.orientador.id}">
+                                <f:selectItems value="#{estagioBean.orientadores}" var="orientador" itemValue="#{orientador.id}" itemLabel="#{orientador.nome}"/>
+                            </p:selectOneMenu>
+                            <p:outputLabel for="aluno-group" value="Aluno:"/>
+                            <p:selectOneMenu id="aluno-group" value="#{estagioBean.estagioSelecionado.aluno.id}" required="true">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{estagioBean.alunos}" var="aluno" itemValue="#{aluno.id}" itemLabel="#{aluno.nome}"/>
+                            </p:selectOneMenu>
+                            <p:outputLabel for="empresa-group" value="Empresa:"/>
+                            <p:selectOneMenu id="empresa-group" value="#{estagioBean.estagioSelecionado.empresa.id}" required="true">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItems value="#{estagioBean.empresas}" var="empresa" itemValue="#{empresa.id}" itemLabel="#{empresa.nome}"/>
+                            </p:selectOneMenu>
+                            <p:outputLabel for="inicio" value="Início:"/>
+                            <p:inputText id="inicio" value="#{estagioBean.estagioSelecionado.inicio}" required="true"/>
+                            <p:outputLabel for="fim" value="Fim:"/>
+                            <p:inputText id="fim" value="#{estagioBean.estagioSelecionado.fim}"
+                                         required="true"/>
+                            <p:outputLabel for="carga_horaria" value="Carga Horária:"/>
+                            <p:inputText id="carga_horaria" value="#{estagioBean.estagioSelecionado.cargaHoraria}"
+                                         required="true"/>
+                            <p:outputLabel for="total_horas" value="Total de Horas:"/>
+                            <p:inputText id="total_horas" value="#{estagioBean.estagioSelecionado.totalHoras}"
+                                         required="true"/>
+                            <p:outputLabel for="status" value="Status:"/>
+                            <p:inputText id="status" value="#{estagioBean.estagioSelecionado.status}"
+                                         required="true"/>
+                        </p:panelGrid>
+                    </p:outputPanel>
+                </p:outputPanel>
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="pi pi-check" actionListener="#{estagioBean.salvar}"
+                                     update="manage-estagio-content" process="manage-estagio-content @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times" onclick="PF('manageEstagioDialog').hide()"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+
+            <p:confirmDialog widgetVar="deleteEstagioDialog" showEffect="fade" width="300"
+                             message="Excluir o estágio selecionado?" header="Confirmar" severity="warn">
+                <p:commandButton value="Sim" icon="pi pi-check" actionListener="#{estagioBean.excluir}"
+                                 process="@this" update=":formEstagio:delete-estagios-button"
+                                 oncomplete="PF('deleteEstagioDialog').hide()" />
+                <p:commandButton value="Não" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                                 onclick="PF('deleteEstagioDialog').hide()" />
+            </p:confirmDialog>
+
+            <p:confirmDialog global="true" showEffect="fade" width="300">
+                <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                                 icon="pi pi-times" />
+            </p:confirmDialog>
+
+        </h:form>
+
+    </h:body>
+</f:view>
+</html>

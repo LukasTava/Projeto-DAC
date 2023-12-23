@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      lang="en">
+<f:view contentType="text/html;charset=UTF-8" encoding="UTF-8">
+    <h:head>
+        <title>Aluno</title>
+        <h:outputStylesheet library="css" name="bootstrap.min.css"/>
+    </h:head>
+    <h:body>
+        <h:form>
+            <p:menubar styleClass="custom-menubar">
+                <p:menuitem value="Aluno" action="/aluno?faces-redirect=true"/>
+                <p:menuitem value="Empresa" action="/empresa?faces-redirect=true"/>
+                <p:menuitem value="Orientador" action="/orientador?faces-redirect=true"/>
+                <p:menuitem value="Estágio" action="/estagio?faces-redirect=true"/>
+                <p:separator/>
+                <p:menuitem value="Avaliação Orientador" action="/avaliacao_orientador?faces-redirect=true"/>
+                <p:menuitem value="Avaliação Empresa" action="/avaliacao_empresa?faces-redirect=true"/>
+            </p:menubar>
+        </h:form>
+        <h:form id="formAluno">
+            <p:growl id="messages" showDetail="true"/>
+            <p:toolbar>
+                <p:toolbarGroup>
+                    <p:commandButton value="Adicionar" icon="pi pi-plus" actionListener="#{alunoBean.novo}"
+                                     update=":dialogs:manage-aluno-content" oncomplete="PF('manageAlunoDialog').show()"
+                                     styleClass="ui-button-success" style="margin-right: .5rem">
+                        <p:resetInput target=":dialogs:manage-aluno-content"/>
+                    </p:commandButton>
+                    <p:commandButton id="delete-alunos-button" value="Excluir"
+                                     icon="pi pi-trash" actionListener="#{alunoBean.excluirAlunosSelecionados}"
+                                     styleClass="ui-button-danger" disabled="#{!alunoBean.hasAlunosSelecionados()}"
+                                     update="@this">
+                        <p:confirm header="Confirmation" message="Excluir os alunos selecionados?"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+                </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="alunosTable" value="#{alunoBean.alunos}" var="aluno"
+                         reflow="true" selection="#{alunoBean.alunosSelecionados}"
+                         rowKey="#{aluno.id}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+
+                <p:ajax event="rowSelect" update=":formAluno:delete-alunos-button"/>
+                <p:ajax event="rowUnselect" update=":formAluno:delete-alunos-button"/>
+                <p:ajax event="rowSelectCheckbox" update=":formAluno:delete-alunos-button"/>
+                <p:ajax event="rowUnselectCheckbox" update=":formAluno:delete-alunos-button"/>
+                <p:ajax event="toggleSelect" update=":formAluno:delete-alunos-button"/>
+
+                <p:column selectionMode="multiple"/>
+                <p:column headerText="ID">
+                    <h:outputText value="#{aluno.id}"/>
+                </p:column>
+                <p:column headerText="Nome">
+                    <h:outputText value="#{aluno.nome}"/>
+                </p:column>
+                <p:column headerText="Matrícula">
+                    <h:outputText value="#{aluno.matricula}"/>
+                </p:column>
+                <p:column exportable="false">
+                    <p:commandButton icon="pi pi-pencil" update=":dialogs:manage-aluno-content"
+                                     oncomplete="PF('manageAlunoDialog').show()"
+                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                        <f:setPropertyActionListener value="#{aluno}" target="#{alunoBean.alunoSelecionado}"/>
+                        <p:resetInput target=":dialogs:manage-aluno-content"/>
+                    </p:commandButton>
+                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                     process="@this"
+                                     oncomplete="PF('deleteAlunoDialog').show()">
+                        <f:setPropertyActionListener value="#{aluno}" target="#{alunoBean.alunoSelecionado}"/>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+
+        <h:form id="dialogs">
+            <p:dialog header="Adicionar aluno" showEffect="fade" modal="true" widgetVar="manageAlunoDialog"
+                      responsive="true">
+                <p:outputPanel id="manage-aluno-content" class="ui-fluid">
+                    <p:outputPanel rendered="#{not empty alunoBean.alunoSelecionado}">
+                        <p:panelGrid columns="2" style="margin-bottom:1rem">
+                            <p:outputLabel for="nome" value="Nome:"/>
+                            <p:inputText id="nome" value="#{alunoBean.alunoSelecionado.nome}" required="true"/>
+                            <p:outputLabel for="matricula" value="Matricula:"/>
+                            <p:inputText id="matricula" value="#{alunoBean.alunoSelecionado.matricula}"
+                                         required="true"/>
+                        </p:panelGrid>
+                    </p:outputPanel>
+                </p:outputPanel>
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="pi pi-check" actionListener="#{alunoBean.salvar}"
+                                     update="manage-aluno-content" process="manage-aluno-content @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times" onclick="PF('manageAlunoDialog').hide()"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+
+            <p:confirmDialog widgetVar="deleteAlunoDialog" showEffect="fade" width="300"
+                             message="Excluir o aluno selecionado?" header="Confirmar" severity="warn">
+                <p:commandButton value="Sim" icon="pi pi-check" actionListener="#{alunoBean.excluir}"
+                                 process="@this" update=":formAluno:delete-alunos-button"
+                                 oncomplete="PF('deleteAlunoDialog').hide()" />
+                <p:commandButton value="Não" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                                 onclick="PF('deleteAlunoDialog').hide()" />
+            </p:confirmDialog>
+
+            <p:confirmDialog global="true" showEffect="fade" width="300">
+                <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                                 icon="pi pi-times" />
+            </p:confirmDialog>
+
+        </h:form>
+
+    </h:body>
+</f:view>
+</html>

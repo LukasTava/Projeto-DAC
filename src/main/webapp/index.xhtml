@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      lang="en">
+<f:view contentType="text/html;charset=UTF-8" encoding="UTF-8">
+    <h:head>
+        <title>Aluno</title>
+        <h:outputStylesheet library="css" name="bootstrap.min.css"/>
+        <link rel="stylesheet" type="text/css" href="styles.css" />
+    </h:head>
+    <h:body>
+        <h:form>
+            <p:menubar styleClass="custom-menubar">
+                <p:menuitem value="Aluno" action="/aluno?faces-redirect=true"/>
+                <p:menuitem value="Empresa" action="/empresa?faces-redirect=true"/>
+                <p:menuitem value="Orientador" action="/orientador?faces-redirect=true"/>
+                <p:menuitem value="Estágio" action="/estagio?faces-redirect=true"/>
+                <p:separator/>
+                <p:menuitem value="Avaliação Orientador" action="/avaliacao_orientador?faces-redirect=true"/>
+                <p:menuitem value="Avaliação Empresa" action="/avaliacao_empresa?faces-redirect=true"/>
+            </p:menubar>
+        </h:form>
+    </h:body>
+</f:view>
+</html>

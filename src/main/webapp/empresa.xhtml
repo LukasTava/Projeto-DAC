@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      lang="en">
+<f:view contentType="text/html;charset=UTF-8" encoding="UTF-8">
+    <h:head>
+        <title>Empresa</title>
+        <h:outputStylesheet library="css" name="bootstrap.min.css"/>
+    </h:head>
+    <h:body>
+        <h:form>
+            <p:menubar styleClass="custom-menubar">
+                <p:menuitem value="Aluno" action="/aluno?faces-redirect=true"/>
+                <p:menuitem value="Empresa" action="/empresa?faces-redirect=true"/>
+                <p:menuitem value="Orientador" action="/orientador?faces-redirect=true"/>
+                <p:menuitem value="Estágio" action="/estagio?faces-redirect=true"/>
+                <p:separator/>
+                <p:menuitem value="Avaliação Orientador" action="/avaliacao_orientador?faces-redirect=true"/>
+                <p:menuitem value="Avaliação Empresa" action="/avaliacao_empresa?faces-redirect=true"/>
+            </p:menubar>
+        </h:form>
+        <!-- Formulário para adicionar empresa -->
+        <h:form id="formEmpresa">
+            <p:growl id="messages" showDetail="true"/>
+            <p:toolbar>
+                <p:toolbarGroup>
+                    <p:commandButton value="Adicionar" icon="pi pi-plus" actionListener="#{empresaBean.novo}"
+                                     update=":dialogs:manage-empresa-content" oncomplete="PF('manageEmpresaDialog').show()"
+                                     styleClass="ui-button-success" style="margin-right: .5rem">
+                        <p:resetInput target=":dialogs:manage-empresa-content"/>
+                    </p:commandButton>
+                    <p:commandButton id="delete-empresas-button" value="Excluir"
+                                     icon="pi pi-trash" actionListener="#{empresaBean.excluirEmpresasSelecionadas}"
+                                     styleClass="ui-button-danger" disabled="#{!empresaBean.hasEmpresasSelecionadas()}"
+                                     update="@this">
+                        <p:confirm header="Confirmation" message="Excluir as empresas selecionadas?"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+                </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="empresasTable" value="#{empresaBean.empresas}" var="empresa"
+                         reflow="true" selection="#{empresaBean.empresasSelecionadas}"
+                         rowKey="#{empresa.id}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+
+                <p:ajax event="rowSelect" update=":formEmpresa:delete-empresas-button"/>
+                <p:ajax event="rowUnselect" update=":formEmpresa:delete-empresas-button"/>
+                <p:ajax event="rowSelectCheckbox" update=":formEmpresa:delete-empresas-button"/>
+                <p:ajax event="rowUnselectCheckbox" update=":formEmpresa:delete-empresas-button"/>
+                <p:ajax event="toggleSelect" update=":formEmpresa:delete-empresas-button"/>
+
+                <p:column selectionMode="multiple"/>
+                <p:column headerText="ID">
+                    <h:outputText value="#{empresa.id}"/>
+                </p:column>
+                <p:column headerText="Nome">
+                    <h:outputText value="#{empresa.nome}"/>
+                </p:column>
+                <p:column headerText="CNPJ">
+                    <h:outputText value="#{empresa.cnpj}"/>
+                </p:column>
+                <p:column exportable="false">
+                    <p:commandButton icon="pi pi-pencil" update=":dialogs:manage-empresa-content"
+                                     oncomplete="PF('manageEmpresaDialog').show()"
+                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                        <f:setPropertyActionListener value="#{empresa}" target="#{empresaBean.empresaSelecionada}"/>
+                        <p:resetInput target=":dialogs:manage-empresa-content"/>
+                    </p:commandButton>
+                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                     process="@this"
+                                     oncomplete="PF('deleteEmpresaDialog').show()">
+                        <f:setPropertyActionListener value="#{empresa}" target="#{empresaBean.empresaSelecionado}"/>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+
+        <h:form id="dialogs">
+            <p:dialog header="Adicionar empresa" showEffect="fade" modal="true" widgetVar="manageEmpresaDialog"
+                      responsive="true">
+                <p:outputPanel id="manage-empresa-content" class="ui-fluid">
+                    <p:outputPanel rendered="#{not empty empresaBean.empresaSelecionada}">
+                        <p:panelGrid columns="2" style="margin-bottom:1rem">
+                            <p:outputLabel for="nome" value="Nome:"/>
+                            <p:inputText id="nome" value="#{empresaBean.empresaSelecionada.nome}" required="true"/>
+                            <p:outputLabel for="cnpj" value="CNPJ:"/>
+                            <p:inputText id="cnpj" value="#{empresaBean.empresaSelecionada.cnpj}"
+                                         required="true"/>
+                        </p:panelGrid>
+                    </p:outputPanel>
+                </p:outputPanel>
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="pi pi-check" actionListener="#{empresaBean.salvar}"
+                                     update="manage-empresa-content" process="manage-empresa-content @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times" onclick="PF('manageAlunoEmpresaDialog').hide()"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+
+            <p:confirmDialog widgetVar="deleteEmpresaDialog" showEffect="fade" width="300"
+                             message="Excluir a empresa selecionada?" header="Confirmar" severity="warn">
+                <p:commandButton value="Sim" icon="pi pi-check" actionListener="#{empresaBean.excluir}"
+                                 process="@this" update=":formEmpresa:delete-empresas-button"
+                                 oncomplete="PF('deleteEmpresaDialog').hide()" />
+                <p:commandButton value="Não" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                                 onclick="PF('deleteEmpresaDialog').hide()" />
+            </p:confirmDialog>
+
+            <p:confirmDialog global="true" showEffect="fade" width="300">
+                <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                                 icon="pi pi-times" />
+            </p:confirmDialog>
+
+        </h:form>
+
+    </h:body>
+</f:view>
+</html>

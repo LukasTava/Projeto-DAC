@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      lang="en">
+<f:view contentType="text/html;charset=UTF-8" encoding="UTF-8">
+    <h:head>
+        <title>AvaliacaoOrientador</title>
+        <h:outputStylesheet library="css" name="bootstrap.min.css"/>
+    </h:head>
+    <h:body>
+        <h:form>
+            <p:menubar styleClass="custom-menubar">
+                <p:menuitem value="Aluno" action="/aluno?faces-redirect=true"/>
+                <p:menuitem value="Empresa" action="/empresa?faces-redirect=true"/>
+                <p:menuitem value="Orientador" action="/orientador?faces-redirect=true"/>
+                <p:menuitem value="Estágio" action="/estagio?faces-redirect=true"/>
+                <p:separator/>
+                <p:menuitem value="Avaliação Orientador" action="/avaliacao_orientador?faces-redirect=true"/>
+                <p:menuitem value="Avaliação Empresa" action="/avaliacao_empresa?faces-redirect=true"/>
+            </p:menubar>
+        </h:form>
+        <h:form id="formAvaliacaoOrientador">
+            <p:growl id="messages" showDetail="true"/>
+            <p:toolbar>
+                <p:toolbarGroup>
+                    <p:commandButton value="Adicionar" icon="pi pi-plus" actionListener="#{avaliacaoOrientadorBean.novo()}"
+                                     update=":dialogs:manage-avaliacao-content" oncomplete="PF('manageAvaliacaoOrientadorDialog').show()"
+                                     styleClass="ui-button-success" style="margin-right: .5rem">
+                        <p:resetInput target=":dialogs:manage-avaliacao-content"/>
+                    </p:commandButton>
+                </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="avaliacoesTable" value="#{avaliacaoOrientadorBean.avaliacoes}" var="avaliacao"
+                         reflow="true"
+                         rowKey="#{avaliacao.id}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+
+                <p:column headerText="ID">
+                    <h:outputText value="#{avaliacao.id}"/>
+                </p:column>
+                <p:column headerText="Aluno">
+                    <h:outputText value="#{avaliacao.aluno.nome}"/>
+                </p:column>
+                <p:column headerText="Orientador">
+                    <h:outputText value="#{avaliacao.orientador.nome}"/>
+                </p:column>
+                <p:column headerText="Assiduidade">
+                    <h:outputText value="#{avaliacao.assiduidade}" />
+                </p:column>
+                <p:column headerText="Disciplina">
+                    <h:outputText value="#{avaliacao.disciplina}" />
+                </p:column>
+                <p:column headerText="Sociabilidade">
+                    <h:outputText value="#{avaliacao.sociabilidade}" />
+                </p:column>
+                <p:column headerText="Responsabilidade">
+                    <h:outputText value="#{avaliacao.responsabilidade}" />
+                </p:column>
+                <p:column headerText="Iniciativa">
+                    <h:outputText value="#{avaliacao.iniciativa}" />
+                </p:column>
+
+                <p:column exportable="false">
+                    <p:commandButton icon="pi pi-pencil" update=":dialogs:manage-avaliacao-content"
+                                     oncomplete="PF('manageAvaliacaoOrientadorDialog').show()"
+                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                        <f:setPropertyActionListener value="#{avaliacao}" target="#{avaliacaoOrientadorBean.avaliacaoOrientadorSelecionado}"/>
+                        <p:resetInput target=":dialogs:manage-avaliacao-content"/>
+                    </p:commandButton>
+                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                     process="@this"
+                                     oncomplete="PF('deleteAvaliacaoOrientadorDialog').show()">
+                        <f:setPropertyActionListener value="#{avaliacao}" target="#{avaliacaoOrientadorBean.avaliacaoOrientadorSelecionado}"/>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+
+        <h:form id="dialogs">
+            <p:dialog header="Adicionar avaliação do orientador" showEffect="fade" modal="true" widgetVar="manageAvaliacaoOrientadorDialog"
+                      responsive="true">
+
+                <p:outputPanel id="manage-avaliacao-content" class="ui-fluid">
+                    <p:panelGrid columns="2">
+                        <p:outputPanel>
+                            <p>Legenda:</p>
+                            <div>
+                                <p:column headerText="Assiduidade">
+                                    <p:outputLabel value="#{avaliacao.assiduidade}" />
+                                </p:column>
+                                <p:column headerText="Disciplina">
+                                    <p:outputLabel value="#{avaliacao.disciplina}" />
+                                </p:column>
+                                <p:column headerText="Sociabilidade">
+                                    <p:outputLabel value="#{avaliacao.sociabilidade}" />
+                                </p:column>
+                                <p:column headerText="Responsabilidade">
+                                    <p:outputLabel value="#{avaliacao.responsabilidade}" />
+                                </p:column>
+                                <p:column headerText="Iniciativa">
+                                    <p:outputLabel value="#{avaliacao.iniciativa}" />
+                                </p:column>
+                            </div>
+                        </p:outputPanel>
+                        <p:outputPanel rendered="#{not empty avaliacaoOrientadorBean.avaliacaoOrientadorSelecionado}">
+                            <p:panelGrid columns="2" style="margin-bottom:1rem">
+                                <p:outputLabel for="orientador-group" value="Orientador:"/>
+                                <p:selectOneMenu id="orientador-group" value="#{avaliacaoOrientadorBean.avaliacaoOrientadorSelecionado.orientador.id}">
+                                    <f:selectItems value="#{avaliacaoOrientadorBean.orientadores}" var="orientador" itemValue="#{orientador.id}" itemLabel="#{orientador.nome}"/>
+                                </p:selectOneMenu>
+                                <p:outputLabel for="aluno-group" value="Aluno:"/>
+                                <p:selectOneMenu id="aluno-group" value="#{avaliacaoOrientadorBean.avaliacaoOrientadorSelecionado.aluno.id}" required="true">
+                                    <f:selectItem itemLabel="Select One" itemValue="" />
+                                    <f:selectItems value="#{avaliacaoOrientadorBean.alunos}" var="aluno" itemValue="#{aluno.id}" itemLabel="#{aluno.nome}"/>
+                                </p:selectOneMenu>
+                                <p:outputLabel for="@next" value="Assiduidade"/>
+                                <p:inputText value="#{avaliacaoOrientadorBean.avaliacaoOrientadorSelecionado.assiduidade}" />
+                                <p:outputLabel for="@next" value="Disciplina"/>
+                                <p:inputText value="#{avaliacaoOrientadorBean.avaliacaoOrientadorSelecionado.disciplina}" />
+                                <p:outputLabel for="@next" value="Sociabilidade"/>
+                                <p:inputText value="#{avaliacaoOrientadorBean.avaliacaoOrientadorSelecionado.sociabilidade}" />
+                                <p:outputLabel for="@next" value="Responsabilidade"/>
+                                <p:inputText value="#{avaliacaoOrientadorBean.avaliacaoOrientadorSelecionado.responsabilidade}" />
+                                <p:outputLabel for="@next" value="Iniciativa"/>
+                                <p:inputText value="#{avaliacaoOrientadorBean.avaliacaoOrientadorSelecionado.iniciativa}" />
+                            </p:panelGrid>
+                        </p:outputPanel>
+                    </p:panelGrid>
+                </p:outputPanel>
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="pi pi-check" actionListener="#{avaliacaoOrientadorBean.salvar}"
+                                     update="manage-avaliacao-content" process="manage-avaliacao-content @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times" onclick="PF('manageAvaliacaoOrientadorDialog').hide()"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+
+            <p:confirmDialog widgetVar="deleteAvaliacaoOrientadorDialog" showEffect="fade" width="300"
+                             message="Excluir a avaliação selecionada?" header="Confirmar" severity="warn">
+                <p:commandButton value="Sim" icon="pi pi-check" actionListener="#{avaliacaoOrientadorBean.excluir}"
+                                 process="@this" oncomplete="PF('deleteAvaliacaoOrientadorDialog').hide()" />
+                <p:commandButton value="Não" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                                 onclick="PF('deleteAvaliacaoOrientadorDialog').hide()" />
+            </p:confirmDialog>
+
+            <p:confirmDialog global="true" showEffect="fade" width="300">
+                <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                                 icon="pi pi-times" />
+            </p:confirmDialog>
+
+        </h:form>
+
+    </h:body>
+</f:view>
+</html>

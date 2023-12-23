@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html lang="en"
+    
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+    <head>
+        <title>Sistema Academico</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <h:outputStylesheet library="css" name="styles.css"/>
+    </head>
+    <h:body>
+    <h:form>
+        <p:menubar>
+            <p:submenu label="Opções">
+                <p:menuitem value="Aluno" action="aluno" />
+                <p:menuitem value="Empresa" action="empresa" />
+                <p:menuitem value="Orientador" action="orientador" />
+                <p:menuitem value="Estágio" action="estagio" />
+            </p:submenu>
+        </p:menubar>
+    </h:form>
+        Message: #{indexBean.helloMessage}.
+        <p><p:clock />
+        </p>
+    
+    <div id="conteudo">
+		<ui:insert name="corpo" />
+	</div>
+</h:body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      lang="en">
+<f:view contentType="text/html;charset=UTF-8" encoding="UTF-8">
+    <h:head>
+        <title>Avaliação da Empresa</title>
+        <h:outputStylesheet library="css" name="bootstrap.min.css"/>
+    </h:head>
+    <h:body>
+        <h:form>
+            <p:menubar>
+                <p:submenu label="Opções">
+                    <p:menuitem value="Aluno" action="/aluno?faces-redirect=true"/>
+                    <p:menuitem value="Empresa" action="/empresa?faces-redirect=true"/>
+                    <p:menuitem value="Orientador" action="/orientador?faces-redirect=true"/>
+                    <p:menuitem value="Estágio" action="/estagio?faces-redirect=true"/>
+                    <p:separator/>
+                    <p:menuitem value="Avaliação Orientador" action="/avaliacao_orientador?faces-redirect=true"/>
+                    <p:menuitem value="Avaliação Empresa" action="/avaliacao_empresa?faces-redirect=true"/>
+                </p:submenu>
+            </p:menubar>
+        </h:form>
+        <!-- Formulário para adicionar AvaliacaoEmpresa -->
+        <h:form id="formAvaliacaoEmpresa">
+            <p:growl id="messages" showDetail="true"/>
+            <p:toolbar>
+                <p:toolbarGroup>
+                    <p:commandButton value="Adicionar" icon="pi pi-plus" actionListener="#{avaliacaoEmpresaBean.novo()}"
+                                     update=":dialogs:manage-avaliacao-content" oncomplete="PF('manageAvaliacaoEmpresaDialog').show()"
+                                     styleClass="ui-button-success" style="margin-right: .5rem">
+                        <p:resetInput target=":dialogs:manage-avaliacao-content"/>
+                    </p:commandButton>
+                </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="avaliacoesTable" value="#{avaliacaoEmpresaBean.avaliacoes}" var="avaliacao"
+                         reflow="true"
+                         rowKey="#{avaliacao.id}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+
+                <p:column headerText="ID">
+                    <h:outputText value="#{avaliacao.id}"/>
+                </p:column>
+                <p:column headerText="Aluno">
+                    <h:outputText value="#{avaliacao.aluno.nome}"/>
+                </p:column>
+                <p:column headerText="Empresa">
+                    <h:outputText value="#{avaliacao.empresa.nome}"/>
+                </p:column>
+                <p:column headerText="Rendimento">
+                    <p:rating stars="4" value="#{avaliacao.rendimento}" readonly="true"/>
+                </p:column>
+                <p:column headerText="Conhecimento">
+                    <p:rating stars="4" value="#{avaliacao.conhecimento}" readonly="true"/>
+                </p:column>
+                <p:column headerText="Cumprimento tarefas">
+                    <p:rating stars="4" value="#{avaliacao.cumprimentoTarefas}" readonly="true"/>
+                </p:column>
+                <p:column headerText="Aprendizagem">
+                    <p:rating stars="4" value="#{avaliacao.aprendizagem}" readonly="true"/>
+                </p:column>
+                <p:column headerText="Desempenho">
+                    <p:rating stars="4" value="#{avaliacao.desempenho}" readonly="true"/>
+                </p:column>
+
+                <p:column exportable="false">
+                    <p:commandButton icon="pi pi-pencil" update=":dialogs:manage-avaliacao-content"
+                                     oncomplete="PF('manageAvaliacaoEmpresaDialog').show()"
+                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                        <f:setPropertyActionListener value="#{avaliacao}" target="#{avaliacaoEmpresaBean.avaliacaoEmpresaSelecionado}"/>
+                        <p:resetInput target=":dialogs:manage-avaliacao-content"/>
+                    </p:commandButton>
+                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                     process="@this"
+                                     oncomplete="PF('deleteAvaliacaoEmpresaDialog').show()">
+                        <f:setPropertyActionListener value="#{avaliacao}" target="#{avaliacaoEmpresaBean.avaliacaoEmpresaSelecionado}"/>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+        </h:form>
+
+        <h:form id="dialogs">
+            <p:dialog header="Adicionar avaliação da Empresa" showEffect="fade" modal="true" widgetVar="manageAvaliacaoEmpresaDialog"
+                      responsive="true">
+                <p:outputPanel id="manage-avaliacao-content" class="ui-fluid">
+                    <p:panelGrid columns="2">
+                        <p:outputPanel>
+                            <p>Legenda:</p>
+                            <div>
+                                <p:rating stars="4" value="#{avaliacaoEmpresaBean.insuficiente}" readonly="true" /><span>Insuficiente</span>
+                            </div>
+                            <div>
+                                <p:rating stars="4" value="#{avaliacaoEmpresaBean.regular}" readonly="true" /><span>Regular</span>
+                            </div>
+                            <div>
+                                <p:rating stars="4" value="#{avaliacaoEmpresaBean.bom}" readonly="true" /><span>Bom</span>
+                            </div>
+                            <div>
+                                <p:rating stars="4" value="#{avaliacaoEmpresaBean.muitoBom}" readonly="true" /><span>Muito bom</span>
+                            </div>
+                        </p:outputPanel>
+                        <p:outputPanel rendered="#{not empty avaliacaoEmpresaBean.avaliacaoEmpresaSelecionado}">
+                            <p:panelGrid columns="2" style="margin-bottom:1rem">
+                                <p:outputLabel for="Empresa-group" value="Empresa:"/>
+                                <p:selectOneMenu id="Empresa-group" value="#{avaliacaoEmpresaBean.avaliacaoEmpresaSelecionado.empresa.id}">
+                                    <f:selectItems value="#{avaliacaoEmpresaBean.empresas}" var="empresa" itemValue="#{empresa.id}" itemLabel="#{empresa.nome}"/>
+                                </p:selectOneMenu>
+                                <p:outputLabel for="aluno-group" value="Aluno:"/>
+                                <p:selectOneMenu id="aluno-group" value="#{avaliacaoEmpresaBean.avaliacaoEmpresaSelecionado.aluno.id}" required="true">
+                                    <f:selectItem itemLabel="Select One" itemValue="" />
+                                    <f:selectItems value="#{avaliacaoEmpresaBean.alunos}" var="aluno" itemValue="#{aluno.id}" itemLabel="#{aluno.nome}"/>
+                                </p:selectOneMenu>
+                                <p:outputLabel for="@next" value="Rendimento"/>
+                                <p:rating stars="4" value="#{avaliacaoEmpresaBean.avaliacaoEmpresaSelecionado.rendimento}" />
+                                <p:outputLabel for="@next" value="Conhecimento"/>
+                                <p:rating stars="4" value="#{avaliacaoEmpresaBean.avaliacaoEmpresaSelecionado.conhecimento}" />
+                                <p:outputLabel for="@next" value="Cumprimento tarefas"/>
+                                <p:rating stars="4" value="#{avaliacaoEmpresaBean.avaliacaoEmpresaSelecionado.cumprimentoTarefas}" />
+                                <p:outputLabel for="@next" value="Aprendizagem"/>
+                                <p:rating stars="4" value="#{avaliacaoEmpresaBean.avaliacaoEmpresaSelecionado.aprendizagem}" />
+                                <p:outputLabel for="@next" value="Desempenho"/>
+                                <p:rating stars="4" value="#{avaliacaoEmpresaBean.avaliacaoEmpresaSelecionado.desempenho}" />
+                            </p:panelGrid>
+                        </p:outputPanel>
+                    </p:panelGrid>
+                </p:outputPanel>
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" icon="pi pi-check" actionListener="#{avaliacaoEmpresaBean.salvar}"
+                                     update="manage-avaliacao-content" process="manage-avaliacao-content @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times" onclick="PF('manageAvaliacaoEmpresaDialog').hide()"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+
+            <p:confirmDialog widgetVar="deleteAvaliacaoEmpresaDialog" showEffect="fade" width="300"
+                             message="Excluir a avaliação selecionada?" header="Confirmar" severity="warn">
+                <p:commandButton value="Sim" icon="pi pi-check" actionListener="#{avaliacaoEmpresaBean.excluir}"
+                                 process="@this" oncomplete="PF('deleteAvaliacaoEmpresaDialog').hide()" />
+                <p:commandButton value="Não" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                                 onclick="PF('deleteAlunoDialog').hide()" />
+            </p:confirmDialog>
+
+            <p:confirmDialog global="true" showEffect="fade" width="300">
+                <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                                 icon="pi pi-times" />
+            </p:confirmDialog>
+
+        </h:form>
+
+    </h:body>
+</f:view>
+</html>
